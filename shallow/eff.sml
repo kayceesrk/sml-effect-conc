@@ -26,10 +26,12 @@ struct
 
   type eff = exn
 
+  (* Type of argument of internal continuations. *)
   datatype arg =
     ArgVal of cont_arg
   | Exception of exn
 
+  (* Type of result of internal continuations. *)
   datatype result =
     ResVal of cont_res
   | Effect of (eff * arg MT.t)
@@ -37,6 +39,7 @@ struct
   type cont = arg MT.t
   type handler = eff -> cont -> cont_res
 
+  (* A reference that points to the parent thread. *)
   val parentContRef : result MT.t option ref = ref NONE
 
   fun perform e =

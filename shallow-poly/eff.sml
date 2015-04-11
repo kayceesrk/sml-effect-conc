@@ -14,9 +14,17 @@ end
 
 signature EFF =
 sig
-  type 'a eff = exn                                         (* Effect type *)
-  type ('a,'b) cont                                   (* Continuation type *)
-  type ('a,'b) handler = 'a eff -> ('a,'b) cont -> 'b      (* handler type *)
+  (** Effect type: Effects are realized through exception types -- the only
+      open type in Standard ML. The type variable 'a represents the result of
+      performing an effect. *)
+  type 'a eff = exn
+
+  (** Continuation type: Represents a continuation that is awaiting a value of
+      type 'a and will return a result of type 'b. *)
+  type ('a,'b) cont
+
+  (** Handler type. *)
+  type ('a,'b) handler = 'a eff -> ('a,'b) cont -> 'b
 
   val perform     : 'a eff -> 'a
   val handleFun   : ('a,'b) handler -> (unit -> 'b) -> 'b

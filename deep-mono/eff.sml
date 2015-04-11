@@ -43,19 +43,17 @@ struct
   (* Type of result of internal continuations. *)
   datatype result =
     ResVal of b
-  | Effect of (eff * cont)
+  | Effect of (eff * arg MT.t)
 
   (* A reference that points to the parent thread. *)
   val parentContRef : result MT.t option ref = ref NONE
-
-  val myHandler : handler option ref = ref NONE
 
   fun perform e =
     case !parentContRef of
       NONE => raise Fail "No parent thread"
     | SOME pt =>
         let
-          val a = MT.switch (fn ct => MT.prepare (pt, Effect (e, Cont {k = ct, h = valOf (!myHandler)})))
+          val a = MT.switch (fn ct => MT.prepare (pt, Effect (e, ct)))
         in
           case a of
             ArgVal v => v
@@ -83,17 +81,14 @@ struct
   let
     val Handler {catch, finally} = handler
     val pt = !parentContRef
-    val myH = !myHandler
     val r = MT.switch (fn t =>
              (parentContRef := SOME t;
-              myHandler := SOME handler;
               MT.prepare (cont, v)))
     val () = parentContRef := pt
-    val () = myHandler := myH
   in
     case r of
       ResVal v => finally v
-    | Effect (e, ct) => catch e ct
+    | Effect (e, ct) => catch e (Cont {k=ct,h=handler})
   end
 
   fun continue c v = continueCore c (ArgVal v)

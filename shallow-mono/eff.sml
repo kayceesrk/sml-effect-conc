@@ -31,12 +31,13 @@ struct
     ArgVal of cont_arg
   | Exception of exn
 
+  type cont = arg MT.t
+
   (* Type of result of internal continuations. *)
   datatype result =
     ResVal of cont_res
-  | Effect of (eff * arg MT.t)
+  | Effect of (eff * cont)
 
-  type cont = arg MT.t
   type handler = eff -> cont -> cont_res
 
   (* A reference that points to the parent thread. *)
